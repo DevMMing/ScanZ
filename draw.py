@@ -3,7 +3,14 @@ from matrix import *
 from gmath import *
 
 def scanline_convert(polygons, i, screen, zbuffer ):
-    pass
+    shapes=[polygons[i][2],polygons[i+1][2],polygons[i+2][2]]
+    top=shapes.index(max(shapes))
+    shapes.pop(top)
+    middle=shapes.index(max(shapes))
+    shapes.pop(middle)
+    bottom=shapes[0]
+    yran=polygons[i+top][1]-polygons[i+bottom][1]
+    draw_line(polygons,screen,zbuffer)
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
