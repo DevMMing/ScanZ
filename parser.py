@@ -27,7 +27,7 @@ The file follows the following format:
                 takes 5 arguemnts (cx, cy, cz, r1, r2)
          box: add a rectangular prism to the POLYGON matrix - 
               takes 6 arguemnts (x, y, z, width, height, depth)	    
-         clear: clears the edge and POLYGON matrices
+         clear: clears the screen and zbuffer matrices
 
 	 circle: add a circle to the edge matrix - 
 	         takes 4 arguments (cx, cy, cz, r)
