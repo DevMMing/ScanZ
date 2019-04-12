@@ -3,40 +3,47 @@ from matrix import *
 from gmath import *
 import random
 def scanline_convert(polygons, i, screen, zbuffer ):
-    shapes=[polygons[i][1],polygons[i+1][1],polygons[i+2][1]]
-    print(shapes)
-    hold=[polygons[i][1],polygons[i+1][1],polygons[i+2][1]]
-    top=hold.index(max(shapes))
-    shapes.remove(hold[top])
-    print(shapes)
-    middle=hold.index(max(shapes))
-    shapes.remove(hold[middle])
-    print(shapes)
-    bottom=hold.index(shapes[0])
-    yran=int(polygons[i+top][1]-polygons[i+bottom][1])
+    top=polygons[i]#m t b
+    middle=polygons[i+1]
+    bottom=polygons[i+2]
+    if top[1]<bottom[1]:
+        temp=bottom
+        bottom=top
+        top=bottom
+    if top[1]<middle[1]:
+        temp=middle
+        middle=top
+        top=temp
+    if middle[1]<bottom[1]:
+        temp=bottom
+        bottom=middle
+        middle=temp
+    yran=int(top[1]-bottom[1])
     print(top)
     print(middle)
     print(bottom)
-    if yran!=0: 
-        x0=(polygons[i+top][0]-polygons[i+bottom][0])/yran
-        x1=(polygons[i+middle][0]-polygons[i+bottom][0])/polygons[i+middle][0]-polygons[i+bottom][0]
-        x2=(polygons[i+top][0]-polygons[i+middle][0]/polygons[i+top][0]-polygons[i+middle][0])
+    fcheck=middle[1]-bottom[1]
+    scheck=top[1]-middle[1]
+    if yran!=0:
+        x0=(top[0]-bottom[0])/yran
+        x1=(middle[0]-bottom[0])/fcheck
+        x2=(top[0]-middle[0])/scheck
         for j in range(yran):
-            color=[random.randint(0,yran),random.randint(0,yran),random.randint(0,yran)]
-            x=polygons[i+bottom][0]+(j*x0)
-            y=polygons[i+bottom][1]+j
-            z=polygons[i+bottom][2]
+            color=[random.randint(1,256),random.randint(1,256),random.randint(1,256)]
+            x=bottom[0]+(j*x0)
+            y=bottom[1]+j
+            z=bottom[2]
             x=int(x)
             y=int(y)
             z=int(z)
-            if j+polygons[i+bottom][1]<=polygons[i+middle][1]:
-                x2=polygons[i+bottom][0]+x1
-                x2=int(x2)
-                draw_line(x,y,z,x2,y,z,screen,zbuffer,color)
+            if j+bottom[1]<=middle[1]:
+                x3=bottom[0]+(x1*j)
+                x3=int(x3)
+                draw_line(x,y,z,x3,y,z,screen,zbuffer,color)
             else:
-                x2=polygons[i+bottom][0]+x1
-                x2=int(x2)
-                draw_line(x,y,z,x2,y,z,screen,zbuffer,color)
+                x3=bottom[0]+(x2*j)
+                x3=int(x3)
+                draw_line(x,y,z,x3,y,z,screen,zbuffer,color)
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
@@ -55,7 +62,7 @@ def draw_polygons( polygons, screen, zbuffer, color ):
         #print normal
         if normal[2] > 0:
             scanline_convert(polygons,point,screen,zbuffer)
-##            
+##
 ##            draw_line( int(polygons[point][0]),
 ##                       int(polygons[point][1]),
 ##                       polygons[point][2],
