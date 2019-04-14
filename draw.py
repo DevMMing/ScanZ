@@ -2,49 +2,56 @@ from display import *
 from matrix import *
 from gmath import *
 import random
+
 def scanline_convert(polygons, i, screen, zbuffer ):
-    top=polygons[i]#m t b
+
+    color=[random.randint(1,256),random.randint(1,256),random.randint(1,256)]
+
+    bottom=polygons[i]
     middle=polygons[i+1]
-    bottom=polygons[i+2]
-    if top[1]<bottom[1]:
-        temp=bottom
-        bottom=top
-        top=bottom
-    if top[1]<middle[1]:
-        temp=middle
-        middle=top
-        top=temp
+    top=polygons[i+2]
+    
     if middle[1]<bottom[1]:
         temp=bottom
         bottom=middle
         middle=temp
-    yran=int(top[1]-bottom[1])
-    print(top)
-    print(middle)
-    print(bottom)
-    fcheck=middle[1]-bottom[1]
-    scheck=top[1]-middle[1]
-    if yran!=0:
-        x0=(top[0]-bottom[0])/yran
-        x1=(middle[0]-bottom[0])/fcheck
-        x2=(top[0]-middle[0])/scheck
-        for j in range(yran):
-            color=[random.randint(1,256),random.randint(1,256),random.randint(1,256)]
-            x=bottom[0]+(j*x0)
-            y=bottom[1]+j
-            z=bottom[2]
-            x=int(x)
-            y=int(y)
-            z=int(z)
-            if j+bottom[1]<=middle[1]:
-                x3=bottom[0]+(x1*j)
-                x3=int(x3)
-                draw_line(x,y,z,x3,y,z,screen,zbuffer,color)
-            else:
-                x3=bottom[0]+(x2*j)
-                x3=int(x3)
-                draw_line(x,y,z,x3,y,z,screen,zbuffer,color)
-
+    if top[1]<bottom[1]:
+        temp=bottom
+        bottom=top
+        top=temp
+    if top[1]<middle[1]:
+        temp=middle
+        middle=top
+        top=temp
+    x0=(top[0]-bottom[0])/(top[1]-bottom[1])
+    z0=(top[2]-bottom[2])/(top[1]-bottom[1])
+    y = int(bottom[1])
+    xp=bottom[0]
+    zp=bottom[2]
+    xq=bottom[0]
+    zq=bottom[2]
+    while y < int(middle[1]):
+        y+=1
+        draw_line(int(xp),int(y),int(zp),int(xq),int(y),int(zq),screen,zbuffer,color)
+        leftstep=(middle[0]-bottom[0])/(middle[1]-bottom[1])
+        zstep=(middle[2]-bottom[2])/(middle[1]-bottom[1])
+        xp+=x0
+        zp+=z0
+        xq+=leftstep
+        zq+=zstep
+    y=int(middle[1])
+    xq=middle[0]
+    zq=middle[2]
+    while y < int(top[1]):
+        y+=1
+        draw_line(int(xp),int(y),int(zp),int(xq),int(y),int(zq),screen,zbuffer,color)
+        rightstep=(top[0]-middle[0])/(top[1]-middle[1])
+        zstep= (top[2]-middle[2])/(top[1]-middle[1])
+        xp+=x0
+        zp+=z0
+        xq+=rightstep
+        zq+=zstep
+        
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
     add_point(polygons, x1, y1, z1)
@@ -300,11 +307,13 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
     if x0 > x1:
         xt = x0
         yt = y0
+        zt = z0
         x0 = x1
         y0 = y1
+        z0 = z1
         x1 = xt
         y1 = yt
-
+        z1 = zt
     x = x0
     y = y0
     A = 2 * (y1 - y0)
@@ -346,9 +355,10 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             d_east = -1 * B
             loop_start = y1
             loop_end = y
-
+    old_loop_start = loop_start
+    z=z0
     while ( loop_start < loop_end ):
-        plot( screen, zbuffer, color, x, y, 0 )
+        plot( screen, zbuffer, color, x, y, z )
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
              (tall and ((A > 0 and d < 0) or (A < 0 and d > 0 )))):
 
@@ -359,5 +369,6 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             x+= dx_east
             y+= dy_east
             d+= d_east
+        z += (z1 - z0)/ (loop_end - old_loop_start)
         loop_start+= 1
-    plot( screen, zbuffer, color, x, y, 0 )
+    plot( screen, zbuffer, color, x, y, z1 )
